@@ -1,12 +1,22 @@
 import jwt from "jsonwebtoken";
-import { ErrorHandler } from "../utils/utility.js";
-import { adminSecretKey } from "../app.js";
-import { TryCatch } from "./error.js";
-import { CHATTU_TOKEN } from "../constants/config.js";
-import { User } from "../models/user.js";
+import {
+  adminSecretKey
+} from "../app.js";
+import {
+  ChitChat_TOKEN
+} from "../constants/config.js";
+import {
+  User
+} from "../models/user.js";
+import {
+  ErrorHandler
+} from "../utils/utility.js";
+import {
+  TryCatch
+} from "./error.js";
 
 const isAuthenticated = TryCatch((req, res, next) => {
-  const token = req.cookies[CHATTU_TOKEN];
+  const token = req.cookies[ChitChat_TOKEN];
   if (!token)
     return next(new ErrorHandler("Please login to access this route", 401));
 
@@ -18,7 +28,7 @@ const isAuthenticated = TryCatch((req, res, next) => {
 });
 
 const adminOnly = (req, res, next) => {
-  const token = req.cookies["chattu-admin-token"];
+  const token = req.cookies["ChitChat-admin-token"];
 
   if (!token)
     return next(new ErrorHandler("Only Admin can access this route", 401));
@@ -37,7 +47,7 @@ const socketAuthenticator = async (err, socket, next) => {
   try {
     if (err) return next(err);
 
-    const authToken = socket.request.cookies[CHATTU_TOKEN];
+    const authToken = socket.request.cookies[ChitChat_TOKEN];
 
     if (!authToken)
       return next(new ErrorHandler("Please login to access this route", 401));
@@ -58,4 +68,8 @@ const socketAuthenticator = async (err, socket, next) => {
   }
 };
 
-export { isAuthenticated, adminOnly, socketAuthenticator };
+export {
+  adminOnly,
+  isAuthenticated,
+  socketAuthenticator
+};
