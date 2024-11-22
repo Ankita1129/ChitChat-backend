@@ -1,30 +1,14 @@
 import jwt from "jsonwebtoken";
-import {
-  adminSecretKey
-} from "../app.js";
-import {
-  TryCatch
-} from "../middlewares/error.js";
-import {
-  Chat
-} from "../models/chat.js";
-import {
-  Message
-} from "../models/message.js";
-import {
-  User
-} from "../models/user.js";
-import {
-  cookieOptions
-} from "../utils/features.js";
-import {
-  ErrorHandler
-} from "../utils/utility.js";
+import { adminSecretKey } from "../app.js";
+import { TryCatch } from "../middlewares/error.js";
+import { Chat } from "../models/chat.js";
+import { Message } from "../models/message.js";
+import { User } from "../models/user.js";
+import { cookieOptions } from "../utils/features.js";
+import { ErrorHandler } from "../utils/utility.js";
 
 const adminLogin = TryCatch(async (req, res, next) => {
-  const {
-    secretKey
-  } = req.body;
+  const { secretKey } = req.body;
 
   const isMatched = secretKey === adminSecretKey;
 
@@ -67,21 +51,10 @@ const allUsers = TryCatch(async (req, res) => {
   const users = await User.find({});
 
   const transformedUsers = await Promise.all(
-    users.map(async ({
-      name,
-      username,
-      avatar,
-      _id
-    }) => {
+    users.map(async ({ name, username, avatar, _id }) => {
       const [groups, friends] = await Promise.all([
-        Chat.countDocuments({
-          groupChat: true,
-          members: _id
-        }),
-        Chat.countDocuments({
-          groupChat: false,
-          members: _id
-        }),
+        Chat.countDocuments({ groupChat: true, members: _id }),
+        Chat.countDocuments({ groupChat: false, members: _id }),
       ]);
 
       return {
@@ -107,34 +80,22 @@ const allChats = TryCatch(async (req, res) => {
     .populate("creator", "name avatar");
 
   const transformedChats = await Promise.all(
-    chats.map(async ({
-      members,
-      _id,
-      groupChat,
-      name,
-      creator
-    }) => {
-      const totalMessages = await Message.countDocuments({
-        chat: _id
-      });
+    chats.map(async ({ members, _id, groupChat, name, creator }) => {
+      const totalMessages = await Message.countDocuments({ chat: _id });
 
       return {
         _id,
         groupChat,
         name,
         avatar: members.slice(0, 3).map((member) => member.avatar.url),
-        members: members.map(({
-          _id,
-          name,
-          avatar
-        }) => ({
+        members: members.map(({ _id, name, avatar }) => ({
           _id,
           name,
           avatar: avatar.url,
         })),
         creator: {
-          name: creator ? .name || "None",
-          avatar: creator ? .avatar.url || "",
+          name: creator?.name || "None",
+          avatar: creator?.avatar.url || "",
         },
         totalMembers: members.length,
         totalMessages,
@@ -154,14 +115,7 @@ const allMessages = TryCatch(async (req, res) => {
     .populate("chat", "groupChat");
 
   const transformedMessages = messages.map(
-    ({
-      content,
-      attachments,
-      _id,
-      sender,
-      createdAt,
-      chat
-    }) => ({
+    ({ content, attachments, _id, sender, createdAt, chat }) => ({
       _id,
       attachments,
       content,
@@ -184,14 +138,12 @@ const allMessages = TryCatch(async (req, res) => {
 
 const getDashboardStats = TryCatch(async (req, res) => {
   const [groupsCount, usersCount, messagesCount, totalChatsCount] =
-  await Promise.all([
-    Chat.countDocuments({
-      groupChat: true
-    }),
-    User.countDocuments(),
-    Message.countDocuments(),
-    Chat.countDocuments(),
-  ]);
+    await Promise.all([
+      Chat.countDocuments({ groupChat: true }),
+      User.countDocuments(),
+      Message.countDocuments(),
+      Chat.countDocuments(),
+    ]);
 
   const today = new Date();
 
@@ -232,10 +184,7 @@ const getDashboardStats = TryCatch(async (req, res) => {
 
 export {
   adminLogin,
-  adminLogout,
-  allChats,
-  allMessages,
-  allUsers,
-  getAdminData,
-  getDashboardStats
+  adminLogout, allChats,
+  allMessages, allUsers, getAdminData, getDashboardStats
 };
+
